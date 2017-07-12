@@ -143,8 +143,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } else {
                     Frame frame = new Frame.Builder().setBitmap(myBitmap).build();
                     SparseArray<Barcode> barcodes = detector.detect(frame);
-                    Barcode thisCode = barcodes.valueAt(0);
-                    Log.e(TAG, "BARCODE_FOUND :" + thisCode);
+                    if (barcodes.size() != 0) {
+                        Barcode thisCode = barcodes.valueAt(0);
+                        Log.e(TAG, "BARCODE_FOUND :" + thisCode);
+                    }
                 }
                 // }
 //                getSparseFaces(myBitmap);
