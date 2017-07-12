@@ -132,10 +132,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             File imgFile = new File(pictureImagePath);
             if (imgFile.exists()) {
                 Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                myBitmap = BitmapFactory.decodeResource(
+                        getApplicationContext().getResources(),
+                        R.drawable.barcode_image);
                 imageViewBarcode.setImageBitmap(myBitmap);
                 BarcodeDetector detector =
                         new BarcodeDetector.Builder(getApplicationContext())
-                                .setBarcodeFormats(Barcode.DATA_MATRIX | Barcode.QR_CODE)
+                                .setBarcodeFormats(Barcode.ALL_FORMATS)
                                 .build();
                 if (!detector.isOperational()) {
                     Log.e(TAG, "Could not set up the detector!");
@@ -143,9 +146,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } else {
                     Frame frame = new Frame.Builder().setBitmap(myBitmap).build();
                     SparseArray<Barcode> barcodes = detector.detect(frame);
+                    Log.e(TAG, "BARCODE_STRING :" + barcodes.toString());
                     if (barcodes.size() != 0) {
                         Barcode thisCode = barcodes.valueAt(0);
-                        Log.e(TAG, "BARCODE_FOUND :" + thisCode);
+                        Log.e(TAG, "BARCODE_FOUND :" + thisCode.rawValue);
                     }
                 }
                 // }
