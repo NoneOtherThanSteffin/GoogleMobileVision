@@ -13,7 +13,6 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.vision.Frame;
@@ -27,10 +26,10 @@ import java.util.Date;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
+    private static final String TAG = "MainActivity";
     private Button buttonCaptureImage;
     private FaceView faceDetectImageView;
-    private static final String TAG = "MainActivity";
-
+    private String pictureImagePath = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,15 +51,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        switch(v.getId()){
-            case R.id.btnTakePicture:{
+        switch (v.getId()) {
+            case R.id.btnTakePicture: {
                 openBackCamera();
             }
-            case R.id.imageViewShowImage:{
-                if (faceDetectImageView.getBackground()!= null) {
+            case R.id.imageViewShowImage: {
+                if (faceDetectImageView.getBackground() != null) {
                     Intent intent = new Intent();
                     intent.setAction(Intent.ACTION_VIEW);
-                    Log.e("Current_Photo_Path",pictureImagePath);
+                    Log.e("Current_Photo_Path", pictureImagePath);
                     Uri imgUri = Uri.parse(pictureImagePath);
                     intent.setDataAndType(imgUri, "image/*");
                     startActivity(intent);
@@ -69,8 +68,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
-    private String pictureImagePath = "";
     private void openBackCamera() {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = timeStamp + ".jpg";
@@ -99,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void getSparseFaces(Bitmap bitmap){
+    private void getSparseFaces(Bitmap bitmap) {
         //Bitmap myBitmap = BitmapFactory.decodeStream(stream);
         FaceDetector detector = new FaceDetector.Builder(getApplicationContext())
                 .setTrackingEnabled(false)
