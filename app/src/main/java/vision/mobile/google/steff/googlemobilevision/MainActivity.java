@@ -13,9 +13,12 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.vision.Frame;
+import com.google.android.gms.vision.barcode.Barcode;
+import com.google.android.gms.vision.barcode.BarcodeDetector;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 
@@ -26,9 +29,19 @@ import java.util.Date;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
+    private static final int REQUEST_BARCODE_CAPTURE = 2;
+    private static final int REQUEST_TEXT_CAPTURE = 3;
     private static final String TAG = "MainActivity";
+
     private Button buttonCaptureImage;
     private FaceView faceDetectImageView;
+
+    private Button buttonCaptureBarcode;
+    private ImageView imageViewBarcode;
+
+    private Button buttonCaptureText;
+    private ImageView imageViewText;
+
     private String pictureImagePath = "";
 
     @Override
@@ -40,35 +53,56 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void setViews() {
+        //CardView FaceDetection
         buttonCaptureImage = (Button) findViewById(R.id.btnTakePicture);
         faceDetectImageView = (FaceView) findViewById(R.id.imageViewShowImage);
+        //CardView BarcodeDetection
+        buttonCaptureBarcode = (Button) findViewById(R.id.btnTakeBarcode);
+        imageViewBarcode = (ImageView) findViewById(R.id.imageViewShowBarcode);
+        //CardView TextDetection
+        buttonCaptureText = (Button) findViewById(R.id.btnTakeTextImage);
+        imageViewText = (ImageView) findViewById(R.id.imageViewShowText);
     }
 
     private void setListeners() {
         buttonCaptureImage.setOnClickListener(this);
         faceDetectImageView.setOnClickListener(this);
+        buttonCaptureBarcode.setOnClickListener(this);
+        imageViewBarcode.setOnClickListener(this);
+        buttonCaptureText.setOnClickListener(this);
+        imageViewText.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btnTakePicture: {
-                openBackCamera();
+                openBackCamera(REQUEST_IMAGE_CAPTURE);
+                break;
             }
             case R.id.imageViewShowImage: {
                 if (faceDetectImageView.getBackground() != null) {
                     Intent intent = new Intent();
                     intent.setAction(Intent.ACTION_VIEW);
-                    Log.e("Current_Photo_Path", pictureImagePath);
+                    Log.e(TAG, "Current_Photo_Path: " + pictureImagePath);
                     Uri imgUri = Uri.parse(pictureImagePath);
                     intent.setDataAndType(imgUri, "image/*");
                     startActivity(intent);
                 }
+                break;
+            }
+            case R.id.btnTakeBarcode: {
+                openBackCamera(REQUEST_BARCODE_CAPTURE);
+                break;
+            }
+            case R.id.btnTakeTextImage: {
+                openBackCamera(REQUEST_TEXT_CAPTURE);
+                break;
             }
         }
     }
 
-    private void openBackCamera() {
+    private void openBackCamera(int requestCode) {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = timeStamp + ".jpg";
         File storageDir = Environment.getExternalStoragePublicDirectory(
@@ -78,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Uri outputFileUri = Uri.fromFile(file);
         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
-        startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE);
+        startActivityForResult(cameraIntent, requestCode);
     }
 
     @Override
@@ -92,6 +126,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // }
                 getSparseFaces(myBitmap);
                 //setPic();
+            }
+        } else if (requestCode == REQUEST_BARCODE_CAPTURE) {
+            Log.e(TAG, "CAPTURE_BARCODE");
+            File imgFile = new File(pictureImagePath);
+            if (imgFile.exists()) {
+                Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                imageViewBarcode.setImageBitmap(myBitmap);
+                BarcodeDetector detector =
+                        new BarcodeDetector.Builder(getApplicationContext())
+                                .setBarcodeFormats(Barcode.DATA_MATRIX | Barcode.QR_CODE)
+                                .build();
+                if (!detector.isOperational()) {
+                    Log.e(TAG, "Could not set up the detector!");
+                    return;
+                } else {
+                    Frame frame = new Frame.Builder().setBitmap(myBitmap).build();
+                    SparseArray<Barcode> barcodes = detector.detect(frame);
+                    Barcode thisCode = barcodes.valueAt(0);
+                    Log.e(TAG, "BARCODE_FOUND :" + thisCode);
+                }
+                // }
+//                getSparseFaces(myBitmap);
+                //setPic();
+//            }
+            } else if (requestCode == REQUEST_TEXT_CAPTURE) {
+                Log.e(TAG, "CAPTURE_TEXT");
+//            File imgFile = new File(pictureImagePath);
+//            if (imgFile.exists()) {
+//                Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                //ImageView myImage = (ImageView) findViewById(R.id.imageViewShowImage);
+                //myImage.setImageBitmap(myBitmap);
+                // }
+//                getSparseFaces(myBitmap);
+                //setPic();
+//            }
             }
         }
     }
